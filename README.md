@@ -4,12 +4,12 @@ A desktop GUI application that prices European and American stock options using 
 
 ---
 
-## What It Does
+## Summary
 
-You type in a few numbers — stock price, strike, volatility, time to expiry — hit **Run Simulation**, and the app:
+You type in a few numbers: stock price, strike, volatility, time to expiry, hit **Run Simulation**, and the app:
 
 1. Simulates thousands of random price paths for the underlying stock under the risk-neutral measure (Geometric Brownian Motion)
-2. Computes the expected discounted payoff across all those paths — that's your option price
+2. Computes the expected discounted payoff across all those paths which is your option price
 3. Shows you a confidence interval so you know how much to trust the number
 4. Displays the analytical Black-Scholes price alongside for comparison
 5. Renders the Greeks (Δ Γ Θ ν ρ) from closed-form formulas
@@ -26,19 +26,11 @@ scipy
 matplotlib
 ```
 
-Install everything at once:
+Installation:
 
 ```bash
 pip install numpy scipy matplotlib
 ```
-
-Matplotlib needs a GUI backend to open a window. If you're on:
-- **Windows / Linux with Tkinter** → works out of the box (TkAgg backend)
-- **macOS** → works out of the box (MacOSX backend)
-- **Linux without Tkinter** → install it: `sudo apt install python3-tk`
-- **Headless server** → you'll need to forward a display or use a virtual framebuffer
-
----
 
 ## Running It
 
@@ -46,13 +38,9 @@ Matplotlib needs a GUI backend to open a window. If you're on:
 python3 monte_carlo_options.py
 ```
 
-The window opens and runs an initial simulation automatically with the default parameters.
-
----
-
 ## The Interface
 
-### Left Panel — Controls
+### Left Panel
 
 | Control | What to enter |
 |---|---|
@@ -63,20 +51,20 @@ The window opens and runs an initial simulation automatically with the default p
 | **Rate % (r)** | Annual risk-free interest rate as a percentage, e.g. `5` for 5% |
 | **Vol % (σ)** | Implied volatility as a percentage, e.g. `20` for 20% |
 | **Expiry yrs (T)** | Time to expiration in years, e.g. `1.0` for one year, `0.25` for three months |
-| **Div yield % (q)** | Continuous dividend yield as a percentage — use `0` if none |
+| **Div yield % (q)** | Continuous dividend yield as a percentage  use `0` if none |
 | **Simulations** | Number of random paths to generate. `20000` is a good default; more = slower but tighter |
 | **Time steps** | How many steps per path. `252` mirrors daily trading days in a year |
 | **Conf. level %** | Width of the confidence interval, e.g. `95` for a 95% CI |
 
 After adjusting any values, press **Run Simulation**.
 
-### Right Panel — Results
+### Right Panel
 
 **Metric Strip (top row)**
 
 | Box | Meaning |
 |---|---|
-| **MC Price** | The simulated option price — your main output |
+| **MC Price** | The simulated option price, your main output |
 | **Std Error** | Standard error of the MC estimate; smaller is better (more paths → smaller) |
 | **Conf. Interval** | The range you can be 95% (or whatever you set) confident the true price falls in |
 | **BS Price** | Analytical Black-Scholes price for comparison (shown for European options only) |
@@ -101,7 +89,7 @@ A histogram of the discounted payoffs from all simulated paths. The dark bar on 
 
 **Sample Price Paths Chart**
 
-Twenty of the simulated stock price paths from today to expiry, with the strike price overlaid as a dashed red line. Paths above the line (for a call) are the ones that pay off. This is purely illustrative — the pricing uses all N paths, not just these 20.
+Twenty of the simulated stock price paths from today to expiry, with the strike price overlaid as a dashed red line. Paths above the line (for a call) are the ones that pay off. This is purely illustrative, the pricing uses all N paths, not just these 20.
 
 ---
 
@@ -114,20 +102,20 @@ The simplest case. All that matters is where the stock ends up at expiry.
 1. Simulate N stock prices at time T by drawing random log-returns from a normal distribution
 2. Compute the payoff for each path: `max(S_T − K, 0)` for a call, `max(K − S_T, 0)` for a put
 3. Discount all payoffs back to today using `e^{−rT}`
-4. Average them — that's the price
+4. Average them and you have your price
 
-**Variance reduction:** The app uses *antithetic variates* — for every random draw `z`, it also uses `−z`. This pairs paths that tend to cancel each other's noise, roughly halving the variance for free.
+**Variance reduction:** The app uses *antithetic variates* for every random draw `z`, it also uses `−z`. This pairs paths that tend to cancel each other's noise, roughly halving the variance for free.
 
 ### American Options (Longstaff-Schwartz)
 
-American options can be exercised at any point before expiry, which makes them harder to price — you need to decide at each time step whether exercising now beats waiting.
+American options can be exercised at any point before expiry, which makes them harder to price you need to decide at each time step whether exercising now beats waiting.
 
 The app uses the **Longstaff-Schwartz least-squares Monte Carlo** method:
 
 1. Simulate full paths from today to expiry (same GBM as above)
 2. Start at expiry with the terminal payoff
 3. Walk backward through time one step at a time. At each step, for paths that are currently in the money, fit a polynomial regression of future discounted cashflows against the current stock price
-4. The regression predicts the "continuation value" — how much you'd expect to get by waiting
+4. The regression predicts the "continuation value" how much you'd expect to get by waiting
 5. If the immediate payoff beats the continuation value, exercise early; otherwise keep waiting
 6. Roll the cashflows back to today
 
@@ -147,14 +135,14 @@ All Greeks are computed analytically from the Black-Scholes closed-form formulas
 
 **Checking your inputs:** If the MC price and BS price diverge significantly for a European option, something may be off — check that your volatility and rate are entered as percentages (e.g. `20`, not `0.20`).
 
-**Out-of-the-money options:** When the strike is far from the spot, most paths expire worthless and the histogram will be dominated by the zero-payoff bar. This is normal — it reflects the actual distribution. The price will be small and the relative standard error will be large; increase simulations to compensate.
+**Out-of-the-money options:** When the strike is far from the spot, most paths expire worthless and the histogram will be dominated by the zero-payoff bar. This is normal it reflects the actual distribution. The price will be small and the relative standard error will be large; increase simulations to compensate.
 
 ---
 
 ## File Structure
 
 ```
-monte_carlo_options.py    # Everything — models, pricing, and GUI in one file
+monte_carlo_options.py    # Everything models, pricing, and GUI in one file
 README.md                 # This file
 ```
 
@@ -164,7 +152,7 @@ The entire application is self-contained in a single file. There are no configur
 
 ## Limitations and Assumptions
 
-- **Constant volatility:** The model uses a single fixed volatility σ for the entire simulation. Real markets have volatility smiles and term structure — this model ignores them.
+- **Constant volatility:** The model uses a single fixed volatility σ for the entire simulation. Real markets have volatility smiles and term structure this model ignores them.
 - **Constant interest rate:** The risk-free rate r is fixed. In practice rates change over time.
 - **Continuous dividends:** The dividend yield q is modeled as a continuous stream. If the stock pays discrete quarterly dividends, this is an approximation.
 - **No transaction costs or bid-ask spread:** The model gives a theoretical mid-market price.
