@@ -97,8 +97,6 @@ Twenty of the simulated stock price paths from today to expiry, with the strike 
 
 ### European Options
 
-The simplest case. All that matters is where the stock ends up at expiry.
-
 1. Simulate N stock prices at time T by drawing random log-returns from a normal distribution
 2. Compute the payoff for each path: `max(S_T − K, 0)` for a call, `max(K − S_T, 0)` for a put
 3. Discount all payoffs back to today using `e^{−rT}`
