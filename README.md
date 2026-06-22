@@ -1,7 +1,5 @@
 # Monte Carlo Option Pricing Engine
 
-Note: AI was utilized when creating portions of the code
-
 This is a desktop GUI application that prices European and American stock options using Monte Carlo simulation, with analytical Black-Scholes benchmarking and live Greeks display.
 
 ---
